@@ -1,4 +1,6 @@
-# CSC500 - Matthew Bayne
+# CSC500 - Critical Thinking - Part 1 - Matthew Bayne
+#====================================================
+
 # Ask the user to input two numbers (num1 and num2).
 num1 = int(input('Please type a number: '))
 num2 = int(input('Please type a second number: '))
