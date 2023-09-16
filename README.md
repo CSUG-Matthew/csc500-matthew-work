@@ -1,2 +1,2 @@
 # csc500-matthew-work
-Private Repository for CSC500
+Repository for my coursework.
