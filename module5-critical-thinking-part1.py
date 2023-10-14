@@ -25,7 +25,7 @@ total_years = int(input('Please input the number of years: '))
 total_months = total_years * 12
 
 for year in range(0, (total_years), 1):
-    for month in range(1, 13, 1):
+    for month in range(1, 13):
         current_rainfall = int(input('How many inches of rainfall for {}: '.format(month_data[month])))
         rainfall_data.update({((year * 12) + month):current_rainfall})
         total_rainfall += current_rainfall
