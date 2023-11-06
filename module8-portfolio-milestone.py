@@ -11,21 +11,6 @@ class ItemToPurchase():
         self.item_cost = 0.0
         self.item_description = item_description
 
-    def request_input(self):
-        print('Item', self.item_num)
-        item_name_in = input('Enter the item name:\n')
-        if item_name_in != '':
-            self.item_name = item_name_in
-        item_price_in = input('Enter the item price:\n')
-        if item_price_in != '':
-            self.item_price = float(item_price_in)
-        item_quantity_in = input('Enter the item quantity:\n')
-        if item_quantity_in != '':
-            self.item_quantity = int(item_quantity_in)
-        item_description_in = input('Enter the item description:\n')
-        if item_description_in != '':
-            self.item_description = item_description_in
-
     def print_item_cost(self):
         self.item_cost = self.item_price * self.item_quantity
         print('{name} {quantity:.0f} @ ${price:.2f} = ${cost:.2f}'.format(
@@ -49,53 +34,90 @@ class ShoppingCart():
         self.item_num += 1
         print('\nADD ITEM TO CART')
         item_instance.item_num = self.item_num
-        item_instance.item_name = input('Enter the item name:\n')
-        item_instance.item_description = input('Enter the item description:\n')
-        item_instance.item_price = float(input('Enter the item price:\n'))
-        item_instance.item_quantity = int(input('Enter the item quantity:\n'))
+        while True: # Require a name for an item to be created.
+            input_name = input('Enter the item name:\n')
+            if input_name == '':
+                print('An item name is required to add an item to cart!')
+            else:
+                item_instance.item_name = input_name
+                break
+        try:
+            item_instance.item_description = input('Enter the item description:\n')
+        except ValueError:
+            print('Wrong value entered. Default decription of \'none\' set. Use the modify option to fix.')
+        try:
+            item_instance.item_price = float(input('Enter the item price:\n'))
+        except ValueError:
+            print('Wrong value entered. Default price of \'0.0\' set. Use the modify option to fix.')
+        try:
+            item_instance.item_quantity = int(input('Enter the item quantity:\n'))
+        except ValueError:
+            print('Wrong value entered. Default quantity of \'0\' set. Use the modify option to fix.')
+        self.cart_items.append(item_instance)
+
+    # For Testing/Quickly adding items
+    def quick_add(self, item_instance):
+        self.item_num += 1
+        item_instance.item_num = self.item_num
         self.cart_items.append(item_instance)
 
     # Step 9: Implement remove
     def remove_item(self):
-        item_to_remove = input('Enter item to remove: ')
+        print('\nREMOVE ITEM FROM CART')
+        self.get_current_cart_list()
+        item_to_remove = input('Enter name of item to remove: ')
         for item in self.cart_items:
             if item_to_remove.lower() == item.item_name.lower():
-                ### print('I want to delete {}'.format(item.item_name))
                 self.cart_items.remove(item)
+                print('\'{}\' item removed from cart!'.format(item.item_name))
                 return
         print('Item not found in cart.\nNothing removed.')
 
-    def modify_item(self):
-        item_instance = input('Enter item to modify: ')
+    # Step 10: Implement Change item quantity (Done by modifying modify_item method)
+    def modify_item(self, choice):
+        self.get_current_cart_list()
+        item_instance_name = input('Enter the item name:\n')
         for item in self.cart_items:
-            if item_instance in item.item_name:
-                print(item_instance, 'is in', item.item_num)
-                item.request_input()
-                return
+            if item_instance_name.lower() in item.item_name.lower() and item_instance_name != '':
+                if choice == 'c': # Edit quantity
+                    try:
+                        item.item_quantity = int(input('Enter the new quantity:\n'))
+                        print('Item quantity of \'{}\' updated!'.format(item.item_quantity))
+                    except ValueError:
+                        print('Wrong value entered. Original value of \'{}\' unchanged. Use the modify option to change.'.format(item.item_quantity))
+                    return
+                elif choice == 'm': # Add missing info
+                    info_missing_flag = False
+                    # No need to check for missing name here, shouldn't happen.
+                    if item.item_description == 'none':
+                        item.item_description = input('Enter the missing item description:\n')
+                        print('Item description of \'{}\' updated!'.format(item.item_description))
+                        info_missing_flag = True
+                    if item.item_price == 0.0:
+                        try:
+                            item.item_price = float(input('Enter the missing item price:\n'))
+                            print('Item price of \'{}\' updated!'.format(item.item_price))
+                        except ValueError:
+                            print('Wrong value entered. Default price of \'0.0\' set. Use the modify option to fix.')
+                        info_missing_flag = True
+                    if item.item_quantity == 0:
+                        try:
+                            item.item_quantity = int(input('Enter the missing item quantity:\n'))
+                            print('Item quantity of \'{}\' updated!'.format(item.item_quantity))
+                        except ValueError:
+                            print('Wrong value entered. Default quantity of \'0\' set. Use the modify option to fix.')
+                        info_missing_flag = True
+                    if info_missing_flag == False:
+                        print('No item information was missing!')
+                    return
         print('Item not found in cart.\nNothing modified.')
 
-    # Step 10: Implement Change item quantity
-    def change_item_quantity(self):
-        print('CHANGE ITEM QUANTITY\n')
-        input_name = input('Enter the item name:\n')
-        quantity_update = float(input('Enter the new quantity:\n'))
+    # Add giving a list of items, for use when name input required (modify_items).
+    def get_current_cart_list(self):
+        print('Current items in cart:')
         for item in self.cart_items:
-            if input_name.lower() in item.item_name.lower():
-                item.item_quantity = quantity_update
-                return
-        print('Item not found in cart.\nNothing modified.')
-        
-    '''
-    Step 10:
-    Implement Change item quantity menu option. Hint: Make new ItemToPurchase object before using ModifyItem() method.
-
-    Example:
-    CHANGE ITEM QUANTITY
-    Enter the item name:
-    Nike Romaleos
-    Enter the new quantity:
-    3
-    '''
+            print(' *', item.item_name)
+        return
 
     def get_num_items_in_cart(self):
         return len(self.cart_items)
@@ -134,10 +156,10 @@ def print_menu(shopping_cart):
         print('a - Add item to cart')
         print('r - Remove item from cart')
         print('c - Change item quantity')
-        print('m - Modify item info')
+        print('m - Modify missing item info')
         print('i - Output items\' descriptions')
         print('o - Output shopping cart')
-        print('q - Quit')
+        print('q - Quit\n')
         user_in = input('Choose an option: ')
         if user_in.lower() == 'a':
             print('You chose \'a\'.')
@@ -146,11 +168,13 @@ def print_menu(shopping_cart):
             print('You chose \'r\'.')
             shopping_cart.remove_item()
         elif user_in.lower() == 'c':
-            print('You chose \'c\'.')
-            shopping_cart.change_item_quantity()
+            print('You chose \'c\'.\n')
+            print('CHANGE ITEM QUANTITY')
+            shopping_cart.modify_item('c')
         elif user_in.lower() == 'm':
-            print('You chose \'m\'.')
-            shopping_cart.modify_item()
+            print('You chose \'m\'.\n')
+            print('MODIFY MISSING ITEM INFO')
+            shopping_cart.modify_item('m')
         elif user_in.lower() == 'i':
             print('You chose \'i\'.')
             shopping_cart.print_descriptions()
@@ -168,36 +192,38 @@ if __name__ == '__main__':
     my_shopping_cart.current_date = input('Enter today\'s date:\n')
     print('Customer name: {}'.format(my_shopping_cart.customer_name))
     print('Today\'s date: {}'.format(my_shopping_cart.current_date))
+    print_menu(my_shopping_cart)
 
-    #my_shopping_cart = ShoppingCart('Matthew', 'October 22, 2023')
     '''
-    my_shopping_cart.add_item(ItemToPurchase(
+    # Testing Setup
+    my_shopping_cart = ShoppingCart('Matthew', 'November 05, 2023')
+    my_shopping_cart.quick_add(ItemToPurchase(
         item_num = 0,
         item_name = 'Pickle',
         item_price = 0.32,
         item_quantity = 3,
         item_description = 'It\'s a pickle.'
     ))
-    my_shopping_cart.add_item(ItemToPurchase(
+    my_shopping_cart.quick_add(ItemToPurchase(
         item_num = 1,
         item_name = 'Mango',
         item_price = 2.07,
         item_quantity = 7,
         item_description = 'A nice sweet mango.'
     ))
-    my_shopping_cart.add_item(ItemToPurchase(
+    my_shopping_cart.quick_add(ItemToPurchase(
         item_num = 2,
         item_name = 'Water',
-        item_price = 1.58,
+        #item_price = 1.58, # Testing for missing value
         item_quantity = 2,
         item_description = 'Refreshing water.'
     ))
-    my_shopping_cart.add_item(ItemToPurchase(
+    my_shopping_cart.quick_add(ItemToPurchase(
         item_num = 3,
         item_name = 'T-Shirt',
         item_price = 21.63,
-        item_quantity = 1,
+        #item_quantity = 1, # Testing for missing value
         item_description = 'A cool t-shirt with a dog wearing sunglasses on it.'
-    ))'''
-
+    ))
     print_menu(my_shopping_cart)
+    '''
